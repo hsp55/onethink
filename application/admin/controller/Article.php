@@ -41,12 +41,12 @@ class Article extends Admin  {
             case 'edit':    //编辑
             case 'update':  //更新
                 $doc_id  =  input('id');
-                $cate_id =  db('Document')->where(array('id'=>$doc_id))->getField('category_id');
+                $cate_id =  db('Document')->where(array('id'=>$doc_id))->value('category_id');
                 break;
             case 'setstatus': //更改状态
             case 'permit':    //回收站
                 $doc_id  =  (array)input('ids');
-                $cate_id =  db('Document')->where(array('id'=>array('in',$doc_id)))->getField('category_id',true);
+                $cate_id =  db('Document')->where(array('id'=>array('in',$doc_id)))->value('category_id');
                 $cate_id =  array_unique($cate_id);
                 break;
         }
@@ -98,6 +98,7 @@ class Article extends Admin  {
             if($cate_id == $value['id'] && $hide_cate){
                 $value['current'] = true;
             }else{
+                $value['current'] = false;
                 $value['current'] = false;
             }
             if(!empty($value['_child'])){
@@ -268,7 +269,7 @@ class Article extends Admin  {
             $map['update_time'][] = array('elt',24*60*60 + strtotime(input('time-end')));
         }
         if ( isset($_GET['nickname']) ) {
-            $map['uid'] = db('Member')->where(array('nickname'=>input('nickname')))->getField('uid');
+            $map['uid'] = db('Member')->where(array('nickname'=>input('nickname')))->value('uid');
         }
 
         // 构建列表数据
@@ -514,7 +515,10 @@ class Article extends Admin  {
 
         $Document   =   model('Document');
         $map        =   array('status'=>3,'uid'=>UID);
-        $list       =   $this->lists($Document,$map);
+        $list       =   $Document->where($map)->field(true)->select();
+        $this->assign('_page', '分页');
+        $this->assign('_total', 1);
+//        $list       =   $this->lists($Document,$map);
         //获取状态文字
         //int_to_string($list);
 
@@ -550,7 +554,10 @@ class Article extends Admin  {
         }
         //只查询pid为0的文章
         $map['pid'] = 0;
-        $list = $this->lists($Document,$map,'update_time desc');
+        $list = $Document->where($map)->order('update_time desc')->field(true)->select();
+        $this->assign('_page', '分页');
+        $this->assign('_total', 1);
+//        $list = $this->lists($Document,$map,'update_time desc');
         $list = $this->parseDocumentList($list,1);
 
         // 记录当前列表页的cookie

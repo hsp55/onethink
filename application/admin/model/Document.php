@@ -57,6 +57,7 @@ class Document extends Model{
     public function detail($id){
         /* 获取基础数据 */
         $info = $this->field(true)->find($id);
+        $info = $info->data;
         if(!(is_array($info) || 1 !== $info['status'])){
             $this->error = '文档被禁用或已删除！';
             return false;
@@ -198,7 +199,7 @@ class Document extends Model{
             $map['category_id'] = array('in', model("Category")->getChildrenId($root['id']));
         }
 
-        $res = $this->where($map)->getField('id');
+        $res = $this->where($map)->value('id');
         if ($res) {
             return false;
         }
