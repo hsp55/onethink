@@ -62,11 +62,11 @@ class Model extends Admin  {
             $this->error($Model->getError());
         }
         $data['attribute_list'] = empty($data['attribute_list']) ? '' : explode(",", $data['attribute_list']);
-        $fields = db('Attribute')->where(array('model_id'=>$data['id']))->getField('id,name,title,is_show',true);
+        $fields = db('Attribute')->where(array('model_id'=>$data['id']))->column('id,name,title,is_show');
         $fields = empty($fields) ? array() : $fields;
         // 是否继承了其他模型
         if($data['extend'] != 0){
-            $extend_fields  = db('Attribute')->where(array('model_id'=>$data['extend']))->getField('id,name,title,is_show',true);
+            $extend_fields  = db('Attribute')->where(array('model_id'=>$data['extend']))->column('id,name,title,is_show');
             $fields        += $extend_fields;
         }
         
