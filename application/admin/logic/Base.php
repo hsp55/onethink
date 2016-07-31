@@ -6,14 +6,14 @@
 // +----------------------------------------------------------------------
 // | Author: 麦当苗儿 <zuojiazi@vip.qq.com> <http://www.zjzit.cn>
 // +----------------------------------------------------------------------
-namespace Admin\Logic;
+namespace app\Admin\Logic;
 use Think\Model;
 
 /**
  * 文档模型逻辑层公共模型
  * 所有逻辑层模型都需要继承此模型
  */
-class BaseLogic extends Model {
+class Base extends Model {
 
     /* 自动验证规则 */
     protected $_validate    =   array();
@@ -57,7 +57,8 @@ class BaseLogic extends Model {
      * @param  number $id 文章ID
      * @return boolean    true-操作成功，false-操作失败
      */
-    public function update($id = 0) {
+//    public function update($id = 0) {
+    public function updateData($id = 0) {
         /* 获取数据 */
         $data = $this->create();
         if ($data === false) {

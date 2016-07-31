@@ -13,6 +13,22 @@
  */
 
 /**
+ * 字符串命名风格转换
+ * type 0 将Java风格转换为C的风格 1 将C风格转换为Java的风格
+ * @param string $name 字符串
+ * @param integer $type 转换类型
+ * @return string
+ */
+function parse_name($name, $type = 0)
+{
+    if ($type) {
+        return ucfirst(preg_replace_callback('/_([a-zA-Z])/', function ($match) {return strtoupper($match[1]);}, $name));
+    } else {
+        return strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $name), "_"));
+    }
+}
+
+/**
  * 获取扩展模型对象
  * @param  integer $model_id 模型编号
  * @return object         模型对象
@@ -20,7 +36,7 @@
 function logic($model_id){
     $name  = parse_name(get_document_model($model_id, 'name'), 1);
     $class = is_file(MODULE_PATH . 'Logic/' . $name . 'Logic' . EXT) ? $name : 'Base';
-    $class = MODULE_NAME . '\\Logic\\' . $class . 'Logic';
+    $class = 'app\\'.MODULE_NAME . '\\Logic\\' . $class;
     return new $class($name);
 }
 
@@ -332,7 +348,7 @@ function get_cate($cate_id = null){
     if(empty($cate_id)){
         return false;
     }
-    $cate   =   db('Category')->where('id='.$cate_id)->getField('title');
+    $cate   =   db('Category')->where('id='.$cate_id)->value('title');
     return $cate;
 }
 
@@ -419,7 +435,7 @@ function get_document_field($value = null, $condition = 'id', $field = null){
     if(empty($field)){
         $info = $info->field(true)->find();
     }else{
-        $info = $info->getField($field);
+        $info = $info->column($field);
     }
     return $info;
 }
