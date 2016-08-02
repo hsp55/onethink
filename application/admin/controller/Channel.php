@@ -36,12 +36,12 @@ class Channel extends Admin  {
      * @author 麦当苗儿 <zuojiazi@vip.qq.com>
      */
     public function add(){
-        if( request()->isPost() ){
+        if( $this->request->isPost() ){
             $Channel = model('Channel');
-            $data = $Channel->isUpdate(false)->save($_POST);
-            if($data){
+            $id = $Channel->save($_POST);
+            if( $id ){
                 //记录行为
-                // action_log('update_channel', 'channel', $id, UID);
+                action_log('update_channel', 'channel', $id, UID);
                 $this->success('新增成功', url('index', ['pid'=>input('pid','')]));
             } else {
                 $errormsg = $Channel->getError();
@@ -68,12 +68,11 @@ class Channel extends Admin  {
      * @author 麦当苗儿 <zuojiazi@vip.qq.com>
      */
     public function edit($id = 0){
-        if( request()->isPost() ){
+        if( $this->request->isPost() ){
             $Channel = model('Channel');
-            $data = $Channel->isUpdate(true)->save($_POST);
-            if($data){
+            if( $Channel->isUpdate(true)->save($_POST) ){
                 //记录行为
-                // action_log('update_channel', 'channel', $data['id'], UID);
+                action_log('update_channel', 'channel', $Channel->id, UID);
                 $this->success('编辑成功', url('index'));
             } else {
                 $errormsg = $Channel->getError();
@@ -116,7 +115,9 @@ class Channel extends Admin  {
         $map = ['id' => ['in', $id] ];
         if(db('Channel')->where($map)->delete()){
             //记录行为
-            // action_log('update_channel', 'channel', $id, UID);
+            foreach ($id as $k => $v) {
+                action_log('update_channel', 'channel', $v, UID);
+            }
             $this->success('删除成功');
         } else {
             $this->error('删除失败！');
@@ -128,7 +129,7 @@ class Channel extends Admin  {
      * @author huajie <banhuajie@163.com>
      */
     public function sort(){
-        if( request()->isGet() ){
+        if( $this->request->isGet() ){
             $ids = input('get.ids');
             $pid = input('get.pid', 0);
 
@@ -146,7 +147,7 @@ class Channel extends Admin  {
             $this->assign('list', $list);
             $this->meta_title = '导航排序';
             return $this->fetch();
-        }elseif ( request()->isPost() ){
+        }elseif ( $this->request->isPost() ){
             $ids = input('post.ids');
             $ids = explode(',', $ids);
             foreach ($ids as $key=>$value){

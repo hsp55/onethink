@@ -30,9 +30,9 @@ class Menu extends Admin {
         $all_menu   =   db('Menu')->column('id,title');
         $map['pid'] =   $pid;
         if($title)
-            $map['title'] = array('like',"%{$title}%");
+            $map['title'] = ['like',"%{$title}%"];
         $list       =   db("Menu")->where($map)->field(true)->order('sort asc,id asc')->select();
-        int_to_string($list,array('hide'=>array(1=>'是',0=>'否'),'is_dev'=>array(1=>'是',0=>'否')));
+        int_to_string($list,['hide'=>[1=>'是',0=>'否'],'is_dev'=>[1=>'是',0=>'否']]);
         if($list) {
             foreach($list as &$key){
                 if($key['pid']){
@@ -53,13 +53,12 @@ class Menu extends Admin {
      * @author yangweijie <yangweijiester@gmail.com>
      */
     public function add(){
-        if( request()->isPost() ){
+        if( $this->request->isPost() ){
             $Menu = model('Menu');
-            $data = $Menu->isUpdate(false)->save($_POST);
-            if( $data ){
+            if( $id = $Menu->save($_POST) ){
                 session('ADMIN_MENU_LIST',null);
                 //记录行为
-                // action_log('update_menu', 'Menu', $id, UID);
+                action_log('update_menu', 'Menu', $id, UID);
                 $this->success('新增成功', Cookie('__forward__'));
             } else {
                 $errormsg = $Menu->getError();
@@ -82,13 +81,12 @@ class Menu extends Admin {
      * @author yangweijie <yangweijiester@gmail.com>
      */
     public function edit($id = 0){
-        if( request()->isPost() ){
+        if( $this->request->isPost() ){
             $Menu = model('Menu');
-            $data = $Menu->isUpdate(true)->save($_POST);
-            if($data){
+            if( $Menu->isUpdate(true)->save($_POST) ){
                 session('ADMIN_MENU_LIST',null);
                 //记录行为
-                // action_log('update_menu', 'Menu', $data['id'], UID);
+                action_log('update_menu', 'Menu', $Menu->id, UID);
                 $this->success('更新成功', Cookie('__forward__'));
             } else {
                 $errormsg = $Menu->getError();
@@ -124,7 +122,9 @@ class Menu extends Admin {
         if(db('Menu')->where($map)->delete()){
             session('ADMIN_MENU_LIST',null);
             //记录行为
-            // action_log('update_menu', 'Menu', $id, UID);
+            foreach ($id as $k => $v) {
+                action_log('update_menu', 'Menu', $v, UID);
+            }
             $this->success('删除成功');
         } else {
             $this->error('删除失败！');
@@ -165,7 +165,7 @@ class Menu extends Admin {
     }
 
     public function import(){
-        if( request()->isPost() ){
+        if( $this->request->isPost() ){
             $tree = input('post.tree');
             $lists = explode(PHP_EOL, $tree);
             $menuModel = db('Menu');
@@ -224,7 +224,7 @@ class Menu extends Admin {
             $this->assign('list', $list);
             $this->meta_title = '菜单排序';
             return $this->fetch();
-        }elseif ( request()->isPost() ){
+        }elseif ( $this->request->isPost() ){
             $ids = input('post.ids');
             $ids = explode(',', $ids);
             foreach ($ids as $key=>$value){
