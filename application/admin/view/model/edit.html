@@ -43,7 +43,6 @@
 				<div id="tab2" class="tab-pane tab2">
 					<div class="form-item cf">
 						<label class="item-label">字段管理<span class="check-tips">（只有新增了字段，该表才会真正建立）</span></label>
-
 						<div class="controls">
 						<div class="form-item cf edit_sort edit_sort_l form_field_sort">
 							<span>字段列表 		[ <a href="{:url('Attribute/add?model_id='.$info['id'])}" target="_balnk">新增</a>
@@ -51,7 +50,7 @@
 							<ul class="dragsort">
 								{foreach name="fields" item="field" key="k"}
 										<li >
-											<em ><input class="ids" type="checkbox" name="attribute_list[]" value="{$field['id']}" {if condition="in_array($field['id'],$info['attribute_list'])"}checked="checked"{/if} /> {$field['title']} [{$field['name']}]</em>
+											<em><input class="ids" type="checkbox" name="attribute_list[]" value="{$field['id']}" {if condition="in_array($field['id'],$info['attribute_list'])"}checked="checked"{/if} /> {$field['title']} [{$field['name']}]</em>
 										</li>
 								{/foreach}
 							</ul>
@@ -80,7 +79,7 @@
 							<span>{$vo}</span>
 							<ul class="dragsort needdragsort" data-group="{$key}">
 								{foreach name="fields" item="field" key="k"}
-									{if condition="(($field['group'] eq $key) or($i eq 1 and !isset($field['group']))) and ($field['is_show'] eq 1)"}
+									{if condition="(!isset($field['group']) and ($field['is_show'] eq 1) and ($i eq 1) or (isset($field['group']) and ($field['group'] eq $key)))"}
 										<li class="getSort">
 											<em data="{$field['id']}">{$field['title']} [{$field['name']}]</em>
 											<input type="hidden" name="field_sort[{$key}][]" value="{$field['id']}"/>
@@ -148,8 +147,8 @@
 					<label class="item-label"></label>
 					<div class="controls edit_sort_btn">
 						<input type="hidden" name="id" value="{$info['id']}"/>
-						<button class="btn submit-btn ajax-post no-refresh" type="submit" target-form="form-horizontal">确 定</button>
-						<button class="btn btn-return" onclick="javascript:history.back(-1);return false;">返 回</button>
+						<button class="btn submit-btn ajax-post" type="submit" target-form="form-horizontal">确 定</button>
+						<a class="btn btn-return" href="{:cookie('__forward__')}">返 回</a>
 					</div>
 				</div>
 			</form>

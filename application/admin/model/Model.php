@@ -8,87 +8,92 @@
 // +----------------------------------------------------------------------
 
 namespace app\admin\model;
-use think\Model;
+// use think\Model;
 
 /**
  * 文档基础模型
  */
-class Model extends Model{
+class Model extends \think\Model{
+    //自动写入时间戳字段
+    protected $autoWriteTimestamp = true;
+
+    // 自动完成规则
+    protected $auto = ['name', 'field_sort', 'attribute_list'];
+    protected $insert = ['status'=>1];
+    protected $update = [];
+    protected function setNameAttr($value){
+        return strtolower($value);
+    }
+    // 处理字段排序数据
+    protected function setField_sortAttr($value){
+        return empty($value) ? '' : json_encode($value);
+    }
+    protected function setAttribute_listAttr($value){
+        return empty($value) ? '' : implode(',', $value);
+    }
+
+    // 自动验证规则
 
     /* 自动验证规则 */
-    protected $_validate = array(
-        array('name', 'require', '标识不能为空', self::MUST_VALIDATE , 'regex', self::MODEL_INSERT),
-        array('name', '/^[a-zA-Z]\w{0,39}$/', '文档标识不合法', self::VALUE_VALIDATE, 'regex', self::MODEL_BOTH),
-        array('name', '', '标识已经存在', self::VALUE_VALIDATE, 'unique', self::MODEL_BOTH),
-        array('title', 'require', '标题不能为空', self::MUST_VALIDATE, 'regex', self::MODEL_BOTH),
-        array('title', '1,30', '标题长度不能超过30个字符', self::MUST_VALIDATE, 'length', self::MODEL_BOTH),
-        array('list_grid', 'checkListGrid', '列表定义不能为空', self::MUST_VALIDATE, 'callback', self::MODEL_UPDATE),
-    );
-
-    /* 自动完成规则 */
-    protected $_auto = array(
-        array('name', 'strtolower', self::MODEL_INSERT, 'function'),
-        array('create_time', NOW_TIME, self::MODEL_INSERT),
-        array('update_time', NOW_TIME, self::MODEL_BOTH),
-        array('status', '1', self::MODEL_INSERT, 'string'),
-        array('field_sort', 'getFields', self::MODEL_BOTH, 'callback'),
-        array('attribute_list', 'getAttribute', self::MODEL_BOTH, 'callback'),
-    );
-
+    protected $validate = [
+        'rule' => [
+            'name'=>'require|unique:model|regex:/^[a-zA-Z]\w{0,39}$/',
+            'title'=>'require|length:1,30',
+            // 'list_grid'=>''
+        ],
+        'msg' => [
+            'name.require'=>'标识不能为空',
+            'name.unique'=>'标识已经存在',
+            'name.regex'=>'文档标识不合法',
+            'title.require'=>'标题不能为空',
+            'title.length'=>'标题长度不能超过30个字符',
+            'list_grid'=>'列表定义不能为空',
+        ]
+    ];
     /**
      * 检查列表定义
      * @param type $data
      */
-    protected function checkListGrid($data) {
-        return input("post.extend") != 0 || !empty($data);
-    }
+    // array('', 'checkListGrid', , self::MUST_VALIDATE, 'callback', self::MODEL_UPDATE),
+    // protected function checkListGrid($data) {
+    //     return input("post.extend") != 0 || !empty($data);
+    // }
+
+
 
     /**
      * 新增或更新一个文档
      * @return boolean fasle 失败 ， int  成功 返回完整的数据
      * @author huajie <banhuajie@163.com>
      */
-    public function update(){
-        /* 获取数据对象 */
-        $data = $this->create();
-        if(empty($data)){
-            return false;
+    public function change(){
+        /* 有id的判断为更新，否则为新增 */
+        if( input('id') ){
+            $this->isUpdate(true); // 更新
+            $info = '更新模型';
+        }else{
+            $this->isUpdate(false); // 新增
+            $info = '新增模型';
         }
 
         /* 添加或新增基础内容 */
-        if(empty($data['id'])){ //新增数据
-            $id = $this->add(); //添加基础内容
-            if(!$id){
-                $this->error = '新增模型出错！';
-                return false;
+        if( !$this->save($_POST) ){
+            if( empty($this->error) ){
+                $this->error = $info . '出错！';
             }
-        } else { //更新数据
-            $status = $this->save(); //更新基础内容
-            if(false === $status){
-                $this->error = '更新模型出错！';
-                return false;
-            }
+            return false;
         }
         // 清除模型缓存数据
         cache('DOCUMENT_MODEL_LIST', null);
 
         //记录行为
-        action_log('update_model','model',$data['id'] ? $data['id'] : $id,UID);
+        action_log('update_model','model',$this->id,UID);
 
         //内容添加或更新完成
-        return $data;
+        $this ->getSuccess = $info . '成功！';
+        return true;
     }
 
-    /**
-     * 处理字段排序数据
-     */
-    protected function getFields($fields){
-        return empty($fields) ? '' : json_encode($fields);
-    }
-
-    protected function getAttribute($fields) {
-        return empty($fields) ? '' : implode(',', $fields);
-    }
 
     /**
      * 获取指定数据库的所有表名

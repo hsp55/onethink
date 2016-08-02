@@ -21,7 +21,7 @@ class Model extends Admin  {
      * @author huajie <banhuajie@163.com>
      */
     public function index(){
-        $map = array('status'=>array('gt',-1));
+        $map = ['status'=>['gt',-1]];
         $list = $this->lists('Model',$map);
         int_to_string($list);
         // 记录当前列表页的cookie
@@ -38,7 +38,7 @@ class Model extends Admin  {
      */
     public function add(){
         //获取所有的模型
-        $models = db('Model')->where(array('extend'=>0))->field('id,title')->select();
+        $models = db('Model')->where(['extend'=>0])->field('id,title')->select();
 
         $this->assign('models', $models);
         $this->meta_title = '新增模型';
@@ -61,22 +61,22 @@ class Model extends Admin  {
         if(!$data){
             $this->error($Model->getError());
         }
-        $data['attribute_list'] = empty($data['attribute_list']) ? '' : explode(",", $data['attribute_list']);
-        $fields = db('Attribute')->where(array('model_id'=>$data['id']))->column('id,name,title,is_show');
-        $fields = empty($fields) ? array() : $fields;
+        $data['attribute_list'] = empty($data['attribute_list']) ? [] : explode(",", $data['attribute_list']);
+        $fields = db('Attribute')->where(['model_id'=>$data['id']])->column('id,name,title,is_show');
+        $fields = empty($fields) ? [] : $fields;
         // 是否继承了其他模型
         if($data['extend'] != 0){
-            $extend_fields  = db('Attribute')->where(array('model_id'=>$data['extend']))->column('id,name,title,is_show');
+            $extend_fields  = db('Attribute')->where(['model_id'=>$data['extend']])->column('id,name,title,is_show');
             $fields        += $extend_fields;
         }
-        
+
         // 梳理属性的可见性
         foreach ($fields as $key=>$field){
             if (!empty($data['attribute_list']) && !in_array($field['id'], $data['attribute_list'])) {
                 $fields[$key]['is_show'] = 0;
             }
         }
-        
+
         // 获取模型排序字段
         $field_sort = json_decode($data['field_sort'], true);
         if(!empty($field_sort)){
@@ -87,10 +87,10 @@ class Model extends Admin  {
                 }
             }
         }
-        
+
         // 模型字段列表排序
         $fields = list_sort_by($fields,"sort");
-        
+
         $this->assign('fields', $fields);
         $this->assign('info', $data);
         $this->meta_title = '编辑模型';
@@ -123,12 +123,11 @@ class Model extends Admin  {
      * @author huajie <banhuajie@163.com>
      */
     public function update(){
-        $res = model('Model')->update();
-
-        if(!$res){
-            $this->error(model('Model')->getError());
+        $Model = model('Model');
+        if( $Model->change() ){
+            $this->success($Model->getSuccess, '');
         }else{
-            $this->success($res['id']?'更新成功':'新增成功', Cookie('__forward__'));
+            $this->error($Model->getError());
         }
     }
 

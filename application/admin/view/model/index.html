@@ -8,8 +8,8 @@
 	</div>
     <div class="tools">
         <a class="btn" href="{:url('Model/add')}">新 增</a>
-        <button class="btn ajax-post" target-form="ids" url="{:url('Model/setStatus',array('status'=>1))}">启 用</button>
-        <button class="btn ajax-post" target-form="ids" url="{:url('Model/setStatus',array('status'=>0))}">禁 用</button>
+        <button class="btn ajax-post" target-form="ids" url="{:url('Model/setStatus',['status'=>1])}">启 用</button>
+        <button class="btn ajax-post" target-form="ids" url="{:url('Model/setStatus',['status'=>0])}">禁 用</button>
         <a class="btn" href="{:url('Model/generate')}">生 成</a>
     </div>
 

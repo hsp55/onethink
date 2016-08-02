@@ -393,7 +393,7 @@ class Admin extends Controller
      * @return array|false
      * 返回数据集
      */
-    protected function lists($model, $where = array(), $order = '', $field = true)
+    protected function lists($model, $where = [], $order = '', $field = true)
     {
         $options = array();
         $REQUEST = $_REQUEST;
@@ -416,7 +416,7 @@ class Admin extends Controller
         unset($REQUEST['_order'], $REQUEST['_field']);
 
         if (empty($where)) {
-            $where = array('status' => array('egt', 0));
+            $where = ['status' => ['egt', 0]];
         }
         if (!empty($where)) {
             $options['where'] = $where;
@@ -439,7 +439,7 @@ class Admin extends Controller
         $this->assign('_total', $total);
 //        $options['limit'] = $page->firstRow.','.$page->listRows;
 //        $model->setProperty('options',$options);
-        return $model->field($field)->select();
+        return $model->field($field)->where($options['where'])->select();
     }
 
     /**
