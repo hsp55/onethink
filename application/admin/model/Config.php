@@ -15,18 +15,28 @@ use think\Model;
  */
 
 class Config  extends Model {
-//     protected $_validate = array(
-//         array('name', 'require', '标识不能为空', self::EXISTS_VALIDATE, 'regex', self::MODEL_BOTH),
-//         array('name', '', '标识已经存在', self::VALUE_VALIDATE, 'unique', self::MODEL_BOTH),
-//         array('title', 'require', '名称不能为空', self::MUST_VALIDATE , 'regex', self::MODEL_BOTH),
-//     );
+    //自动写入时间戳字段
+    protected $autoWriteTimestamp = true;
 
-//     protected $_auto = array(
-//         array('name', 'strtoupper', self::MODEL_BOTH, 'function'),
-//         array('create_time', NOW_TIME, self::MODEL_INSERT),
-//         array('update_time', NOW_TIME, self::MODEL_BOTH),
-//         array('status', '1', self::MODEL_BOTH),
-//     );
+    // 自动完成
+    protected $auto = ["name", "status"=>1];
+    protected $insert = [];
+    protected function setNameAttr($value) {
+        return strtoupper($value);
+    }
+
+    // 自动验证规则
+    protected $validate = [
+        'rule' => [
+            'name'  => 'require|unique:config',
+            'title'  => 'require',
+        ],
+        'msg' => [
+            'name.require' => '配置标识不能为空',
+            'name.unique' => '配置标识已经存在',
+            'title.require' => '配置标题不能为空',
+        ]
+    ];
 
     /**
      * 获取配置列表
@@ -36,7 +46,7 @@ class Config  extends Model {
     public function lists(){
         $map    = array('status' => 1);
         $data   = $this->where($map)->field('type,name,value')->select();
-        
+
         $config = array();
         if($data && is_array($data)){
             foreach ($data as $value) {
